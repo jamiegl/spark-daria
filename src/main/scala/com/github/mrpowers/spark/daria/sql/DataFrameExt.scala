@@ -412,6 +412,22 @@ object DataFrameExt {
         StructType(loop(df.schema))
       )
     }
+
+    /**
+     *
+     * @param f Function to apply to multiple columns
+     * @param dataType Type of columns to apply function f to
+     * @param exclusionList Name of columns not to apply function to
+     * @return Dataframe with function f applied to all columns not in exclusionList
+     */
+
+    def transformMultipleColumns(f: Column => Column, dataType: DataType, exclusionList: List[String] = List()): DataFrame = {
+      val exprs = df.schema.map {
+        case schemaElement if !exclusionList.contains(schemaElement.name) && schemaElement.dataType == dataType => f(col(schemaElement.name))
+        case schemaElement => col(schemaElement.name)
+      }
+      df.select(exprs: _*)
+    }
   }
 
 }
